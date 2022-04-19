@@ -4588,7 +4588,7 @@ datetime = {
      * The number of milliseconds 20 minutes for schedule min duration
      * @type {number}
      */
-    MILLISECONDS_SCHEDULE_MIN_DURATION: 20 * 60000,
+    MILLISECONDS_SCHEDULE_MIN_DURATION: 5 * 60000,
 
     /**
      * convert milliseconds
@@ -8320,6 +8320,8 @@ VLayout.prototype._getMouseYAdditionalLimit = function(splPanel) {
             return panel.options.minHeight;
         };
 
+    //console.log('_getMouseYAdditionalLimit');
+
     for (cursor = this.prevPanel(splPanel);
         util.isExisty(cursor);
         cursor = this.prevPanel(cursor)) {
@@ -8622,10 +8624,13 @@ VPanel.prototype.setHeight = function(container, newHeight, force) {
     var autoHeight = this.options.autoHeight;
     container = container || this.container;
 
+
     // 한번 force 호출이 일어난 이후에는 force 호출만 허용한다
     if (!force && this.isHeightForcedSet && !autoHeight) {
         return;
     }
+
+    //console.log('setHeight', force, minHeight, autoHeight, newHeight);
 
     if (force) {
         this.isHeightForcedSet = true;
@@ -9018,6 +9023,8 @@ Base.prototype.createSchedules = function(dataList, silent) {
 Base.prototype.updateSchedule = function(schedule, options) {
     var start = options.start || schedule.start;
     var end = options.end || schedule.end;
+
+    //console.log('updateSchedule', schedule);
 
     options = options ? sanitizeOptions(options) : {};
 
@@ -17379,6 +17386,7 @@ TimeClick.prototype._onClick = function(clickEvent) {
         blockElement = domutil.closest(target, config.classname('.time-date-schedule-block')),
         schedulesCollection = this.baseController.schedules;
 
+    //console.log('TimeClick', timeView, blockElement);
     if (!timeView || !blockElement) {
         return;
     }
@@ -17480,6 +17488,7 @@ DayNameClick.prototype.checkExpectCondition = function(target) {
  * @emits DayNameClick#clickDayname
  */
 DayNameClick.prototype._onClick = function(clickEvent) {
+    //console.log('DayNameClick');
     var self = this,
         target = clickEvent.target,
         daynameView = this.checkExpectCondition(target),
@@ -17541,11 +17550,13 @@ var timeCore = {
     _calcGridYIndex: function(baseMil, height, y) {
         // get ratio from right expression > point.y : x = session.height : baseMil
         // and convert milliseconds value to hours.
+        //console.log('baseMil, height, y', baseMil, height, y);
         var result = datetime.millisecondsTo('hour', (y * baseMil) / height),
             floored = result | 0,
-            nearest = common.nearest(result - floored, [0, 1]);
+            nearest = common.nearest(result - floored, [0, 0.0166666675, 0.0333333351, 0.0500000045, 0.0666666701, 0.0833333358, 0.100000001, 0.116666667, 0.13333334, 0.150000006, 0.166666672, 0.183333337, 0.200000003, 0.216666669, 0.233333334, 0.25, 0.266666681, 0.283333361, 0.300000042, 0.316666722, 0.333333403, 0.350000083, 0.366666764, 0.383333445, 0.400000125, 0.416666806, 0.433333486, 0.450000167, 0.466666847, 0.483333528, 0.500000179, 0.51666683, 0.53333348, 0.550000131, 0.566666782, 0.583333433, 0.600000083, 0.616666734, 0.633333385, 0.650000036, 0.666666687, 0.683333337, 0.699999988, 0.716666639, 0.73333329, 0.74999994, 0.766666591, 0.783333242, 0.799999893, 0.816666543, 0.833333194, 0.849999845, 0.866666496, 0.883333147, 0.899999797, 0.916666448, 0.933333099, 0.94999975, 0.9666664, 0.983333051, 0.999999702]);// [0.083334, 0.166667, 0.25, 0.33334, 0.416667, 0.5, 0.58334, 0.666667, 0.75, 0.83334, 0.916667, 1]); //[0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.8, 0.9, 1]
 
-        return floored + (nearest ? 0.5 : 0);
+        //console.log('result, floored, nearest', result, floored, nearest);
+        return floored + nearest;
     },
 
     /**
@@ -17575,6 +17586,8 @@ var timeCore = {
                 nearestGridTimeY = new TZDate(viewTime).addMinutes(
                     datetime.minutesFromHours(nearestGridY + options.hourStart)
                 );
+
+            //console.log('ccc', nearestGridY, nearestGridTimeY);
 
             return util.extend({
                 target: domevent.getEventTarget(mouseEvent),
@@ -17860,6 +17873,7 @@ TimeCreation.prototype._onDrag = function(dragEventData, overrideEventName, revi
 
     eventData = getScheduleDataFunc(dragEventData.originEvent);
 
+        //console.log('_retriveScheduleData', eventData);
     if (revise) {
         revise(eventData);
     }
@@ -17950,7 +17964,7 @@ TimeCreation.prototype._onDragEnd = function(dragEndEventData) {
             dragStart.nearestGridTimeY,
             eventData.nearestGridTimeY
         ].sort(array.compare.num.asc);
-        range[1].addMinutes(30);
+        range[1].addMinutes(5); //truc chelou
 
         eventData.createRange = range;
 
@@ -17989,6 +18003,9 @@ TimeCreation.prototype._onClick = function(clickEventData) {
     }, this);
 
     condResult = this.checkExpectedCondition(clickEventData.target);
+
+    //console.log('TimeCreation');
+
     if (!condResult || this._disableClick) {
         return;
     }
@@ -18262,11 +18279,14 @@ TimeCreationGuide.prototype._getStyleDataFunc = function(viewHeight, hourLength,
      * @returns {number[]} top, time
      */
     function getStyleData(scheduleData) {
-        var minMinutes = 30;
+        var minMinutes = 5;
+
         var gridY = scheduleData.nearestGridY,
             gridTimeY = scheduleData.nearestGridTimeY,
             gridEndTimeY = scheduleData.nearestGridEndTimeY || new TZDate(gridTimeY).addMinutes(minMinutes),
             top, startTime, endTime;
+
+        //console.log('minminute', scheduleData);
 
         top = common.limit(ratio(hourLength, viewHeight, gridY), [0], [viewHeight]);
         startTime = common.limitDate(gridTimeY, todayStartTime, todayEndTime);
@@ -18283,6 +18303,8 @@ TimeCreationGuide.prototype._getStyleDataFunc = function(viewHeight, hourLength,
  * @param {object} dragStartEventData - dragStart schedule data.
  */
 TimeCreationGuide.prototype._createGuideElement = function(dragStartEventData) {
+
+
     var relatedView = dragStartEventData.relatedView,
         hourStart = datetime.millisecondsFrom('hour', dragStartEventData.hourStart) || 0,
         unitData, styleFunc, styleData, result, top, height, start, end;
@@ -18295,6 +18317,8 @@ TimeCreationGuide.prototype._createGuideElement = function(dragStartEventData) {
     end = new TZDate(styleData[2]).addMinutes(datetime.minutesFromHours(hourStart));
     top = styleData[0];
     height = (unitData[4] * (end - start) / MIN60);
+
+    //console.log('_createGuideElement', dragStartEventData);
 
     result = this._limitStyleData(
         top,
@@ -18313,7 +18337,8 @@ TimeCreationGuide.prototype._createGuideElement = function(dragStartEventData) {
  * @param {object} dragEventData - drag schedule data.
  */
 TimeCreationGuide.prototype._onDrag = function(dragEventData) {
-    var minutes30 = 30;
+
+    var minutes30 = 5;
     var styleFunc = this._styleFunc,
         unitData = this._styleUnit,
         startStyle = this._styleStart,
@@ -18326,8 +18351,10 @@ TimeCreationGuide.prototype._onDrag = function(dragEventData) {
         return;
     }
 
-    heightOfHalfHour = (unitData[4] / 2);
+    heightOfHalfHour = (unitData[4] / 12);
     endStyle = styleFunc(dragEventData);
+
+    //console.log('TimeCreationGuide.prototype._onDrag', unitData, heightOfHalfHour);
 
     if (endStyle[0] > startStyle[0]) {
         result = this._limitStyleData(
@@ -18566,6 +18593,7 @@ TimeMove.prototype._onDragStart = function(dragStartEventData) {
  * @param {function} [revise] - supply function for revise schedule data before emit.
  */
 TimeMove.prototype._onDrag = function(dragEventData, overrideEventName, revise) {
+    //console.log('TimeMove.prototype._onDrag');
     var getScheduleDataFunc = this._getScheduleDataFunc,
         timeView = this._getTimeView(dragEventData.target),
         dragStart = this._dragStart,
@@ -18967,6 +18995,7 @@ TimeMoveGuide.prototype._onDragStart = function(dragStartEventData) {
  * @param {object} dragEventData - drag event data
  */
 TimeMoveGuide.prototype._onDrag = function(dragEventData) {
+    //console.log('TimeMove.prototype._onDrag');
     var timeView = dragEventData.currentView,
         viewOptions = timeView.options,
         viewHeight = timeView.getViewBound().height,
@@ -19179,6 +19208,7 @@ TimeResize.prototype._onDragStart = function(dragStartEventData) {
  * @param {function} [revise] - supply function for revise schedule data before emit.
  */
 TimeResize.prototype._onDrag = function(dragEventData, overrideEventName, revise) {
+
     var getScheduleDataFunc = this._getScheduleDataFunc,
         startScheduleData = this._dragStart,
         scheduleData;
@@ -19190,6 +19220,8 @@ TimeResize.prototype._onDrag = function(dragEventData, overrideEventName, revise
     scheduleData = getScheduleDataFunc(dragEventData.originEvent, {
         targetModelID: startScheduleData.targetModelID
     });
+
+    //console.log('TimeResize.prototype._onDrag', scheduleData);
 
     if (revise) {
         revise(scheduleData);
@@ -19237,13 +19269,16 @@ TimeResize.prototype._updateSchedule = function(scheduleData) {
     baseDate = new TZDate(relatedView.getDate());
     dateEnd = datetime.end(baseDate);
     newEnds = new TZDate(schedule.getEnds()).addMilliseconds(timeDiff);
+//newEnds = new TZDate(schedule.getStarts()).addMinutes(5);
+
+
 
     if (newEnds > dateEnd) {
         newEnds = new TZDate(dateEnd);
     }
 
-    if (newEnds.getTime() - schedule.getStarts().getTime() < datetime.millisecondsFrom('minutes', 30)) {
-        newEnds = new TZDate(schedule.getStarts()).addMinutes(30);
+    if (newEnds.getTime() - schedule.getStarts().getTime() < datetime.millisecondsFrom('minutes', 5)) {
+        newEnds = new TZDate(schedule.getStarts()).addMinutes(5);
     }
 
     changes = common.getScheduleChanges(
@@ -19251,6 +19286,8 @@ TimeResize.prototype._updateSchedule = function(scheduleData) {
         ['end'],
         {end: newEnds}
     );
+
+    //console.log('baseDate, dateEnd, newEnds', baseDate, dateEnd, schedule.getStarts(), newEnds);
 
     /**
      * @event TimeResize#beforeUpdateSchedule
@@ -19293,16 +19330,19 @@ TimeResize.prototype._onDragEnd = function(dragEndEventData) {
         targetModelID: dragStart.targetModelID
     });
 
+    //console.log('TimeResize scheduleData', scheduleData);
+
     scheduleData.range = [
         dragStart.timeY,
         new TZDate(scheduleData.timeY).addMinutes(30)
     ];
+    //console.log('TimeResize TZDate', scheduleData.range[1]);
 
     scheduleData.nearestRange = [
         dragStart.nearestGridTimeY,
         scheduleData.nearestGridTimeY.addMinutes(30)
     ];
-
+    //console.log('TimeResize scheduleData cc', scheduleData);
     this._updateSchedule(scheduleData);
 
     /**
@@ -19542,7 +19582,7 @@ TimeResizeGuide.prototype._onDrag = function(dragEventData) {
 
     height = (this._startHeightPixel + gridYOffsetPixel);
     // at least large than 30min from schedule start time.
-    minHeight = guideTop + ratio(hourLength, viewHeight, 0.5);
+    minHeight = guideTop + ratio(hourLength, viewHeight, 0.08334);//0.5
     minHeight -= this._startTopPixel;
     timeMinHeight = minHeight;
     minHeight += ratio(minutesLength, viewHeight, goingDuration) + ratio(minutesLength, viewHeight, comingDuration);
@@ -19553,7 +19593,7 @@ TimeResizeGuide.prototype._onDrag = function(dragEventData) {
     height = Math.min(height, maxHeight);
 
     timeHeight = ratio(minutesLength, viewHeight, modelDuration) + gridYOffsetPixel;
-
+    //console.log('TimeResizeGuide.prototype._onDrag', height, timeMinHeight, timeHeight);
     this._refreshGuideElement(height, timeMinHeight, timeHeight);
 };
 
@@ -26740,6 +26780,7 @@ DayGridSchedule.prototype._getMinHeight = function(maxScheduleInDay) {
     var contentHeight = (maxScheduleInDay * opt.scheduleHeight)
         + ((maxScheduleInDay - 1) * opt.scheduleGutter);
 
+    //console.log('minHeight', contentHeight);
     return contentHeight;
 };
 
@@ -27168,10 +27209,11 @@ Time.prototype._getScheduleViewBoundY = function(viewModel, options) {
         height = baseHeight - top;
         croppedEnd = true;
     }
+    //console.log('Time.prototype._getScheduleViewBoundY', duration, baseHeight, baseMS, SCHEDULE_MIN_DURATION);
 
     return {
         top: top,
-        height: Math.max(height, this.options.minHeight) - this.options.defaultMarginBottom,
+        height: height, //Math.max(height, this.options.minHeight) - this.options.defaultMarginBottom
         modelDurationHeight: modelDurationHeight,
         goingDurationHeight: goingDurationHeight,
         comingDurationHeight: comingDurationHeight,
@@ -27384,7 +27426,7 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
     var shiftMinutes = Math.abs(timezoneOffset % SIXTY_MINUTES);
     var now = new TZDate().toLocalTime();
     var nowMinutes = now.getMinutes();
-    var hoursRange = util.range(0, 24);
+    var hoursRange = util.range(0, 24, 0.5);
     var nowAroundHours = null;
     var nowHours, nowHoursIndex;
     var isNegativeZero = 1 / -Infinity === shiftByOffset;
@@ -27393,12 +27435,16 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
         shiftByOffset -= 1;
     }
 
+    //console.log('hoursRange', hoursRange, shiftByOffset, timezoneOffset);
+
     // shift the array and take elements between start and end
     common.shiftArray(hoursRange, shiftByOffset);
-    common.takeArray(hoursRange, hourStart, hourEnd);
+    //common.takeArray(hoursRange, hourStart, hourEnd);
 
     nowHours = common.shiftHours(now.getHours(), shiftByOffset) % 24;
     nowHoursIndex = util.inArray(nowHours, hoursRange);
+
+    //console.log('nowHours', hoursRange);
 
     if (hasHourMarker) {
         if (nowMinutes < 20) {
@@ -27414,6 +27460,7 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
 
     return util.map(hoursRange, function(hour, index) {
         var color;
+        var minutes=0;
         var fontWeight;
         var isPast =
             (hasHourMarker && index <= nowHoursIndex) ||
@@ -27428,10 +27475,15 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
             color = styles.futureTimeColor;
             fontWeight = styles.futureTimeFontWeight;
         }
+        if(!Number.isInteger(hour))
+        {
+            minutes=30;
+            hour=Math.floor(hour);
+        }
 
         return {
             hour: hour,
-            minutes: shiftMinutes,
+            minutes: minutes+shiftMinutes,
             hidden: nowAroundHours === hour || index === 0,
             color: color || '',
             fontWeight: fontWeight || ''
@@ -27693,6 +27745,7 @@ TimeGrid.prototype._getTimezoneViewModel = function(currentHours, timezonesColla
         var timezoneOffset = getOffsetByTimezoneOption(timezone, hourmarker.getTime());
         var timezoneDifference = timezoneOffset + primaryOffset;
         var timeSlots = getHoursLabels(opt, currentHours >= 0, timezoneDifference, styles);
+        //console.log('timeSlots', timeSlots);
         var dateDifference;
 
         hourmarker.setMinutes(hourmarker.getMinutes() + timezoneDifference);
