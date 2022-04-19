@@ -39,7 +39,7 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
     var shiftMinutes = Math.abs(timezoneOffset % SIXTY_MINUTES);
     var now = new TZDate().toLocalTime();
     var nowMinutes = now.getMinutes();
-    var hoursRange = util.range(0, 24);
+    var hoursRange = util.range(0, 24, 0.5); //every 30 minutes
     var nowAroundHours = null;
     var nowHours, nowHoursIndex;
     var isNegativeZero = 1 / -Infinity === shiftByOffset;
@@ -69,6 +69,7 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
 
     return util.map(hoursRange, function(hour, index) {
         var color;
+        var minutes=0;
         var fontWeight;
         var isPast =
             (hasHourMarker && index <= nowHoursIndex) ||
@@ -83,10 +84,15 @@ function getHoursLabels(opt, hasHourMarker, timezoneOffset, styles) {
             color = styles.futureTimeColor;
             fontWeight = styles.futureTimeFontWeight;
         }
+        if(!Number.isInteger(hour))
+        {
+            minutes=30;
+            hour=Math.floor(hour);
+        }
 
         return {
             hour: hour,
-            minutes: shiftMinutes,
+            minutes: minutes+shiftMinutes,
             hidden: nowAroundHours === hour || index === 0,
             color: color || '',
             fontWeight: fontWeight || ''

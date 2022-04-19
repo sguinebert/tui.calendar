@@ -182,7 +182,7 @@ TimeCreationGuide.prototype._getStyleDataFunc = function(viewHeight, hourLength,
      * @returns {number[]} top, time
      */
     function getStyleData(scheduleData) {
-        var minMinutes = 30;
+        var minMinutes = 5;
         var gridY = scheduleData.nearestGridY,
             gridTimeY = scheduleData.nearestGridTimeY,
             gridEndTimeY = scheduleData.nearestGridEndTimeY || new TZDate(gridTimeY).addMinutes(minMinutes),
@@ -233,7 +233,7 @@ TimeCreationGuide.prototype._createGuideElement = function(dragStartEventData) {
  * @param {object} dragEventData - drag schedule data.
  */
 TimeCreationGuide.prototype._onDrag = function(dragEventData) {
-    var minutes30 = 30;
+    var minutesDelta = 5;
     var styleFunc = this._styleFunc,
         unitData = this._styleUnit,
         startStyle = this._styleStart,
@@ -246,7 +246,7 @@ TimeCreationGuide.prototype._onDrag = function(dragEventData) {
         return;
     }
 
-    heightOfHalfHour = (unitData[4] / 2);
+    heightOfHalfHour = (unitData[4] / 12); //every 5 minutes
     endStyle = styleFunc(dragEventData);
 
     if (endStyle[0] > startStyle[0]) {
@@ -254,14 +254,14 @@ TimeCreationGuide.prototype._onDrag = function(dragEventData) {
             startStyle[0],
             (endStyle[0] - startStyle[0]) + heightOfHalfHour,
             startStyle[1],
-            new TZDate(endStyle[1]).addMinutes(minutes30)
+            new TZDate(endStyle[1]).addMinutes(minutesDelta)
         );
     } else {
         result = this._limitStyleData(
             endStyle[0],
             (startStyle[0] - endStyle[0]) + heightOfHalfHour,
             endStyle[1],
-            new TZDate(startStyle[1]).addMinutes(minutes30)
+            new TZDate(startStyle[1]).addMinutes(minutesDelta)
         );
         result.push(true);
     }

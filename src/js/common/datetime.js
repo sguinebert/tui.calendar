@@ -110,10 +110,10 @@ datetime = {
     MILLISECONDS_PER_MINUTES: 60000,
 
     /**
-     * The number of milliseconds 20 minutes for schedule min duration
+     * The number of milliseconds 5 minutes for schedule min duration
      * @type {number}
      */
-    MILLISECONDS_SCHEDULE_MIN_DURATION: 20 * 60000,
+    MILLISECONDS_SCHEDULE_MIN_DURATION: 5 * 60000,
 
     /**
      * convert milliseconds
